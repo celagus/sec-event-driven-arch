@@ -1,6 +1,6 @@
 # Event-driven architecture for Security automation purposes
 
-Still working on some features  👷‍♂️
+Still working in some features  👷‍♂️
 
 ## Requisites
 * [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
@@ -44,7 +44,7 @@ Make sure you have configured your AWS CLI variables with your credentials
 
 ### Prepare your environment
 
-Replace environment data from these files:
+Replace environment data at least from these files:
 ```bash
 app/serverless.yml
 iac/main.tf
