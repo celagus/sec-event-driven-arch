@@ -1,0 +1,76 @@
+service: sec-event-driven-arch
+
+frameworkVersion: '3'
+
+configValidationMode: error
+
+plugins:
+   - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: false
+
+provider:
+  name: aws
+  runtime: python3.8
+  memorySize: 512
+
+functions:
+  lambda_sqs_trigger:
+    handler: lambda_sqs_trigger.event_handler
+    name: lambda_sqs_trigger
+    description: Function to automatically process ioc events from sqs
+    timeout: 150
+    role: arn:aws:iam::<your-acountid-here>:role/sec-event-driven-arch-lambdas
+    events:
+      - sqs:
+          arn: arn:aws:sqs:us-east-1:<your-acountid-here>:sec-event-driven-arch.fifo
+          batchSize: 10
+  lambda_sqs_put_msg:
+    handler: lambda_sqs_put_msg.event_handler
+    name: lambda_sqs_put_msg
+    description: Function to put events on sqs
+    timeout: 150
+    role: arn:aws:iam::<your-acountid-here>:role/sec-event-driven-arch-lambdas
+  lambda_dynamodb_trigger:
+    handler: lambda_dynamodb_trigger.event_handler
+    name: lambda_dynamodb_trigger
+    description: Function to automatically process dynamodb items
+    timeout: 150
+    role: arn:aws:iam::<your-acountid-here>:role/sec-event-driven-arch-lambdas
+    events:
+      - stream:
+          arn: arn:aws:dynamodb:us-east-1:<your-acountid-here>:table/sec-event-driven-arch/stream/2022-08-05T02:27:07.602
+          batchSize: 10
+          startingPosition: LATEST
+          maximumRetryAttempts: 3
+          enabled: true
+          destinations:
+            onFailure:
+              arn: arn:aws:sns:us-east-1:<your-acountid-here>:test_topic
+              type: sns
+  lambda_validate_ip:
+    handler: lambda_validate_ip.event_handler
+    name: lambda_validate_ip
+    description: Function to prevalidate IP inputs
+    timeout: 60
+    role: arn:aws:iam::<your-acountid-here>:role/sec-event-driven-arch-lambdas
+  lambda_validate_ip_3p:
+    handler: lambda_validate_ip_3p.event_handler
+    name: lambda_validate_ip_3p
+    description: Function to validate IP inputs to 3rd party trusted origins
+    timeout: 120
+    role: arn:aws:iam::<your-acountid-here>:role/sec-event-driven-arch-lambdas
+  lambda_aws_waf_block_ip:
+    handler: lambda_aws_waf_block_ip.event_handler
+    name: lambda_aws_waf_block_ip
+    description: Function to block IP on AWS WAF
+    timeout: 150
+    role: arn:aws:iam::<your-acountid-here>:role/sec-event-driven-arch-lambdas
+  lambda_aws_waf_unblock_ip:
+    handler: lambda_aws_waf_unblock_ip.event_handler
+    name: lambda_aws_waf_unblock_ip
+    description: Function to unblock IP from AWS WAF
+    timeout: 150
+    role: arn:aws:iam::<your-acountid-here>:role/sec-event-driven-arch-lambdas
